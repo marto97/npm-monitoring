@@ -1,0 +1,24 @@
+{
+  "name": "npm-monitoring-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Martin Yankov",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^20.12.7",
+    "all-the-package-names": "^2.0.1441",
+    "axios": "^1.6.8",
+    "luxon": "^3.4.4",
+    "pacote": "^18.0.0",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.2"
+  }
+}
