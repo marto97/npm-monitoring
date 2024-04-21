@@ -8,12 +8,13 @@ const enableDownloadSourceCode = true;
 const enableDownloadMetaData = true;
 const targetDownloadDirectory = './data/downloaded_packages';
 const targetMetadataDirectory = './data/metadata';
+const localMetadataPackagesLatestVersion = './data/localPackagesLatestVersion.json'
 const batchSize = 1000; // Number of packages to process in each batch
 
 async function main() {
     try {
         if (enableDownloadMetaData) {
-            await fetchAllPackageMetadata(allPackageNames, targetMetadataDirectory, batchSize);
+            await fetchAllPackageMetadata(allPackageNames, targetMetadataDirectory, batchSize, localMetadataPackagesLatestVersion);
         }
         if (enableDownloadSourceCode) {
             await downloadAllPackagesSource(allPackageNames, targetDownloadDirectory);
