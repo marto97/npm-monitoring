@@ -12,10 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^20.12.7",
-    "all-the-package-names": "^2.0.1449",
+    "all-the-package-names": "^2.0.1463",
     "axios": "^1.6.8",
     "luxon": "^3.4.4",
-    "pacote": "^18.0.0",
+    "pacote": "^18.0.2",
     "typescript": "^5.4.5"
   },
   "devDependencies": {
