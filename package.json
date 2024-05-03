@@ -11,11 +11,12 @@
   "author": "Martin Yankov",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^20.12.7",
-    "all-the-package-names": "^2.0.1463",
+    "@types/node": "^20.12.8",
+    "all-the-package-names": "^2.0.1471",
     "axios": "^1.6.8",
     "luxon": "^3.4.4",
-    "pacote": "^18.0.2",
+    "node-fetch": "^3.3.2",
+    "pacote": "^18.0.3",
     "typescript": "^5.4.5"
   },
   "devDependencies": {
