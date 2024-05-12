@@ -17,6 +17,7 @@
     "luxon": "^3.4.4",
     "node-fetch": "^3.3.2",
     "pacote": "^18.0.6",
+    "semver": "^7.6.2",
     "typescript": "^5.4.5"
   },
   "devDependencies": {

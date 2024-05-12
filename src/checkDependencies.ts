@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const semver = require('semver');
 
 interface DependencyInfo {
     name: string;
@@ -8,6 +9,7 @@ interface DependencyInfo {
 }
 
 // TODO get it from local JSON file to reduce npm requests
+// DONE add signs checks
 async function getLatestPackageVersion(packageName: string): Promise<string | null> {
     try {
         const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
@@ -47,10 +49,10 @@ async function checkDependencies(packageDir: string, dev: boolean): Promise<void
             continue;
         }
 
-        if (dependency.version !== latestVersion) {
-            console.log(`Package '${dependency.name}' is outdated. Used version: ${dependency.version}, Latest version: ${latestVersion}`);
+        if (semver.satisfies(latestVersion, dependency.version)) {
+            console.log(`Package '${dependency.name}' is up to date. Used version: ${dependency.version}, Latest version: ${latestVersion}`);
         } else {
-            console.log(`Package '${dependency.name}' is up to date.`);
+            console.log(`Package '${dependency.name}' is outdated. Used version: ${dependency.version}, Latest version: ${latestVersion}`);
         }
     }
 }
