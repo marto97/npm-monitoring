@@ -5,14 +5,70 @@ import { checkNpmPackage } from './findVulnerability';
 const packageNames = require("all-the-package-names");
 
 // Local testing for first 50 packages
-const allPackageNames = packageNames.slice(0, 50);
+// const allPackageNames = packageNames.slice(0, 50);
 const enableDownloadSourceCode = true;
 const enableDownloadMetaData = true;
-const enableCheckDependences = true;
+const enableCheckDependences = false;
 const targetDownloadDirectory = './data/downloaded_packages';
 const targetMetadataDirectory = './data/metadata';
 const localMetadataPackagesLatestVersion = './data/localPackagesLatestVersion.json'
 const batchSize = 1000; // Number of packages to process in each batch
+
+// Local testing for most popular 50 packages
+const allPackageNames = [
+    "lodash",
+    "chalk",
+    "request",
+    "commander",
+    "react",
+    "express",
+    "debug",
+    "async",
+    "fs-extra",
+    "moment",
+    "prop-types",
+    "react-dom",
+    "bluebird",
+    "underscore",
+    "vue",
+    "axios",
+    "tslib",
+    "mkdirp",
+    "glob",
+    "yargs",
+    "colors",
+    "inquirer",
+    "webpack",
+    "uuid",
+    "classnames",
+    "minimist",
+    "body-parser",
+    "rxjs",
+    "babel-runtime",
+    "jquery",
+    "yeoman-generator",
+    "through2",
+    "babel-core",
+    "core-js",
+    "semver",
+    "babel-loader",
+    "cheerio",
+    "rimraf",
+    "q",
+    "eslint",
+    "css-loader",
+    "shelljs",
+    "dotenv",
+    "typescript",
+    "@types/node",
+    "@angular/core",
+    "js-yaml",
+    "style-loader",
+    "winston",
+    "@angular/common",
+    "redux"
+  ]
+
 
 async function main() {
     try {
@@ -27,7 +83,9 @@ async function main() {
             checkDependencies(packageDir, true); // For devDependencies
             checkDependencies(packageDir, false); // For dependencies
         }
-        if (true) {
+
+        //TODO implement Vulnerabilities checker
+        if (false) {
             const packageName = "react";
             checkNpmPackage(packageName)
                 .then((advisory) => {
