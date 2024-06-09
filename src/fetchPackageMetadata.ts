@@ -1,12 +1,45 @@
 import { DateTime } from 'luxon';
 import { checkIfExistsAndUpdatePackageInfoFile } from './checkLocalPackageVersion';
+import { removePackage } from './removePackage';
 const axios = require('axios');
 const fs = require('fs');
+const { exec } = require('child_process');
+
+// TODO fix npm audit
+async function runNpmAuditForPackage(packageName: string, folderName: string): Promise<void> {
+    try {
+        exec(`npm audit --json ${packageName}`, (error: any, stdout: string, stderr: any) => {
+            if (error) {
+                console.error(`Error running 'npm audit' for package '${packageName}': ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`'npm audit' for package '${packageName}' encountered an error: ${stderr}`);
+                return;
+            }
+
+            const auditResults = JSON.parse(stdout);
+            const timestamp = DateTime.local().toFormat('yyyyMMddHHmmss');
+            const auditFile = `./${folderName}/${packageName}_npm_audit_results_${timestamp}.json`;
+
+            fs.writeFileSync(auditFile, JSON.stringify(auditResults, null, 2));
+            console.log(`'npm audit' results for package '${packageName}' saved to ${auditFile}`);
+        });
+    } catch (error) {
+        console.error(`Error running npm audit for package '${packageName}':`, error);
+    }
+}
 
 async function fetchPackageMetadata(packageNamesBatch: string[], batchIndex: number, folderName: string, localMetadataPackagesLatestVersion: string): Promise<void> {
+
+    // const folderName = 'audit_results';
+
     try {
         const metadataPromises = packageNamesBatch.map(async packageName => {
             try {
+                // TODO also check for removed packages     "description": "security holding package",
+                //"repository": "npm/security-holder",
+                
                 const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
                 const latestVersion = response.data['dist-tags'].latest;
                 const check = await checkIfExistsAndUpdatePackageInfoFile(packageName, latestVersion, localMetadataPackagesLatestVersion);
@@ -17,6 +50,9 @@ async function fetchPackageMetadata(packageNamesBatch: string[], batchIndex: num
                 }
 
             } catch (error) {
+                //TODO remove package here
+                const check = await removePackage(packageName, localMetadataPackagesLatestVersion);
+                console.error(`Is package '${packageName}' removed? : ${check}`);
                 console.error(`Failed to fetch metadata for package '${packageName}': ${error}`);
                 return null;
             }

@@ -2,6 +2,7 @@ import { downloadAllPackagesSource } from './downloadSourceCode';
 import { fetchAllPackageMetadata } from './fetchPackageMetadata';
 import { checkDependencies } from './checkDependencies';
 import { checkNpmPackage } from './findVulnerability';
+import { getNpmPackagePopularity } from './getPackagePopularity';
 const packageNames = require("all-the-package-names");
 
 // Local testing for first 50 packages
@@ -9,6 +10,7 @@ const packageNames = require("all-the-package-names");
 const enableDownloadSourceCode = true;
 const enableDownloadMetaData = true;
 const enableCheckDependences = false;
+const enableGetNPMPackagePopularity = false;
 const targetDownloadDirectory = './data/downloaded_packages';
 const targetMetadataDirectory = './data/metadata';
 const localMetadataPackagesLatestVersion = './data/localPackagesLatestVersion.json'
@@ -67,7 +69,7 @@ const allPackageNames = [
     "winston",
     "@angular/common",
     "redux"
-  ]
+]
 
 
 async function main() {
@@ -79,9 +81,16 @@ async function main() {
             await downloadAllPackagesSource(allPackageNames, targetDownloadDirectory);
         }
         if (enableCheckDependences) {
-            const packageDir = './data/downloaded_packages/-adisagar2003-react-share-on-social/-adisagar2003-react-share-on-social@1.0.9'; // Replace with the path to your package directory
+            const packageDir = './data/downloaded_packages/eslint/eslint@9.2.0';
             checkDependencies(packageDir, true); // For devDependencies
             checkDependencies(packageDir, false); // For dependencies
+        }
+        if (enableGetNPMPackagePopularity) {
+            const packageName = 'react';
+            const startDate = '2024-05-05';
+            const endDate = '2024-05-17';
+
+            await getNpmPackagePopularity(packageName, startDate, endDate);
         }
 
         //TODO implement Vulnerabilities checker
