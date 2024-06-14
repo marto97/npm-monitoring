@@ -3,12 +3,14 @@ import { fetchAllPackageMetadata } from './fetchPackageMetadata';
 import { checkDependencies } from './checkDependencies';
 import { checkNpmPackage } from './findVulnerability';
 import { getNpmPackagePopularity } from './getPackagePopularity';
+import { fetchAndSaveNpmDocs } from './fetchAndSaveNpmDocs';
 const packageNames = require("all-the-package-names");
 
 // Local testing for first 50 packages
 // const allPackageNames = packageNames.slice(0, 50);
-const enableDownloadSourceCode = true;
-const enableDownloadMetaData = true;
+const fetchAllNpmDocs = true;
+const enableDownloadSourceCode = false;
+const enableDownloadMetaData = false;
 const enableCheckDependences = false;
 const enableGetNPMPackagePopularity = false;
 const targetDownloadDirectory = './data/downloaded_packages';
@@ -75,6 +77,9 @@ const allPackageNames = packageNames;
 
 async function main() {
     try {
+        if (fetchAllNpmDocs){
+            await fetchAndSaveNpmDocs();
+        }
         if (enableDownloadMetaData) {
             await fetchAllPackageMetadata(allPackageNames, targetMetadataDirectory, batchSize, localMetadataPackagesLatestVersion);
         }
