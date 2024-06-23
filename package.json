@@ -11,7 +11,6 @@
   "author": "Martin Yankov",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^20.14.8",
     "@types/node-fetch": "^2.6.11",
     "all-the-package-names": "^2.0.1569",
     "axios": "^1.7.2",
@@ -21,10 +20,13 @@
     "npm-registry-fetch": "^17.1.0",
     "pacote": "^18.0.6",
     "semver": "^7.6.2",
-    "typescript": "^5.5.2"
+    "stream-json": "^1.8.0"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2",
-    "@types/npm-registry-fetch": "^8.0.7"
+    "@types/node": "^20.14.8",
+    "@types/npm-registry-fetch": "^8.0.7",
+    "@types/stream-json": "^1.7.7",
+    "typescript": "^5.5.2"
   }
 }
