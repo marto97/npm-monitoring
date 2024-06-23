@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { writeFileSync, appendFileSync } from 'fs';
+import fetch from 'npm-registry-fetch';
+import { createWriteStream, WriteStream } from 'fs';
 
 // const url = 'https://replicate.npmjs.com/_all_docs';
 const url = 'https://replicate.npmjs.com/_all_docs?include_docs=true';
-const limit = 1000;  // Number of documents per request
+const limit = 5;  // Number of documents per request
 let step = 0;
 
 async function fetchAndSaveNpmDocsOld() {
@@ -69,10 +71,11 @@ async function fetchAndSaveNpmDocsOld2() {
     console.log("All documents have been saved to npm_all_docs.json");
 }
 
-async function fetchAndSaveNpmDocs() {
+// Worked but stopped at 8GB  without error and there are dublications
+async function fetchAndSaveNpmDocsOld3() {
     let hasMore = true;
     let lastDocId = '';
-    const fileName = 'npm_all_docs4.json';
+    const fileName = 'npm_all_docs5.json';
     writeFileSync(fileName, '[\n');  // Start the JSON array
 
     console.time("Total time");
@@ -80,6 +83,7 @@ async function fetchAndSaveNpmDocs() {
     while (hasMore) {
         console.time(`Step ${step + 1} time`);
         try {
+            console.log(`limit: ${limit} startkey: ${lastDocId}`);
             // Fetch a chunk of documents
             const response = await axios.get(url, {
                 params: {
@@ -89,7 +93,7 @@ async function fetchAndSaveNpmDocs() {
                 }
             });
             const data = response.data;
-            
+
             // Check if there are more documents
             hasMore = data.rows.length === limit;
 
@@ -118,6 +122,79 @@ async function fetchAndSaveNpmDocs() {
     appendFileSync(fileName, '{}]\n');  // Add an empty object to handle the trailing comma
     console.timeEnd("Total time");
     console.log("All documents have been saved to npm_all_docs.json");
+}
+
+const baseUrl = 'https://replicate.npmjs.com/_all_docs';
+const outputFile = 'npm_packages_metadata_6.json';
+const pageSize = 1000;
+
+let hasMore = true;
+let lastDocId = '';
+
+async function fetchPage(startkey: string | null, outputFile: string) {
+    console.time(`Step ${step + 1} time`);
+    const queryParams = new URLSearchParams({
+        include_docs: 'true',
+        limit: pageSize.toString(),
+    });
+    if (startkey) {
+        queryParams.set('startkey', JSON.stringify(startkey));
+        queryParams.set('skip', '1'); // Skip the first item to avoid duplication
+    }
+
+    const url = `${baseUrl}?${queryParams.toString()}`;
+    console.log(`[${new Date().toISOString()}] Fetching: ${url}`);
+
+    const response = await fetch(url);
+    const data: any = await response.json();
+
+    if (data.rows.length === pageSize) {
+        hasMore = true;
+    } else {
+        hasMore = false;
+    }
+
+    console.log(`[${new Date().toISOString()}] Fetched ${data.rows.length} rows. HasMore: ${hasMore}`);
+
+    // Process and save the data
+    const docs = data.rows.map((row: any) => row.doc);
+    if (docs.length > 0) {
+        docs.forEach((doc: any, index: any) => {
+            const jsonString = JSON.stringify(doc, null, 2);
+            appendFileSync(outputFile, jsonString + (hasMore || index < docs.length - 1 ? ',\n' : '\n'));
+        });
+        // Update the last document ID
+        lastDocId = docs[docs.length - 1]._id;
+    }
+
+    step = step + 1;
+    console.timeEnd(`Step ${step} time`);
+
+    // Check if there's more data to fetch
+    if (hasMore) {
+        lastDocId = data.rows[data.rows.length - 1].id;
+        console.log(`[${new Date().toISOString()}] Last key: ${lastDocId}`);
+
+        await fetchPage(lastDocId, outputFile);
+    }
+}
+
+async function fetchAndSaveNpmDocs() {
+    console.time("Total time");
+    // const writeStream: WriteStream = createWriteStream(outputFile, { flags: 'w' });
+    // writeStream.write('');  // Start of the JSON array
+    writeFileSync(outputFile, '[\n');  // Start the JSON array
+    try {
+        await fetchPage(null, outputFile);
+    } catch (error) {
+        console.error('An error occurred while fetching the data:', error);
+    } finally {
+        // writeStream.write('{}]');  // End of the JSON array (empty object as a hack to fix the trailing comma)
+        // writeStream.end();
+        appendFileSync(outputFile, '{}]\n');  // Add an empty object to handle the trailing comma
+        console.log('All package metadata has been saved to', outputFile);
+        console.timeEnd("Total time");
+    }
 }
 
 export {
