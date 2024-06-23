@@ -125,58 +125,78 @@ async function fetchAndSaveNpmDocsOld3() {
 }
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
-const outputFile = 'npm_packages_metadata_6.json';
+const outputFile = 'npm_packages_metadata7.json';
 const pageSize = 1000;
+const maxRetries = 3;
+const retryDelay = 5000; // Delay in milliseconds (5 seconds)
 
 let hasMore = true;
 let lastDocId = '';
 
-async function fetchPage(startkey: string | null, outputFile: string) {
-    console.time(`Step ${step + 1} time`);
-    const queryParams = new URLSearchParams({
-        include_docs: 'true',
-        limit: pageSize.toString(),
-    });
-    if (startkey) {
-        queryParams.set('startkey', JSON.stringify(startkey));
-        queryParams.set('skip', '1'); // Skip the first item to avoid duplication
-    }
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-    const url = `${baseUrl}?${queryParams.toString()}`;
-    console.log(`[${new Date().toISOString()}] Fetching: ${url}`);
-
-    const response = await fetch(url);
-    const data: any = await response.json();
-
-    if (data.rows.length === pageSize) {
-        hasMore = true;
-    } else {
-        hasMore = false;
-    }
-
-    console.log(`[${new Date().toISOString()}] Fetched ${data.rows.length} rows. HasMore: ${hasMore}`);
-
-    // Process and save the data
-    const docs = data.rows.map((row: any) => row.doc);
-    if (docs.length > 0) {
-        docs.forEach((doc: any, index: any) => {
-            const jsonString = JSON.stringify(doc, null, 2);
-            appendFileSync(outputFile, jsonString + (hasMore || index < docs.length - 1 ? ',\n' : '\n'));
+async function fetchPage(startkey: string | null, outputFile: string, retryCount = 0) {
+    try {
+        console.time(`Step ${step + 1} time`);
+        const queryParams = new URLSearchParams({
+            include_docs: 'true',
+            limit: pageSize.toString(),
         });
-        // Update the last document ID
-        lastDocId = docs[docs.length - 1]._id;
+        if (startkey) {
+            queryParams.set('startkey', JSON.stringify(startkey));
+            queryParams.set('skip', '1'); // Skip the first item to avoid duplication
+        }
+
+        const url = `${baseUrl}?${queryParams.toString()}`;
+        console.log(`[${new Date().toISOString()}] Fetching: ${url}`);
+
+        // const url2 = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit=3&startkey=%22--fil--1%22&skip=1';
+        // console.log(`[${new Date().toISOString()}] Fetching: ${url2}`);
+        const response = await fetch(url);
+        console.log(`[${new Date().toISOString()}] Fetched response status ${response.status} statusText: ${response.statusText}, size: ${response.size} , ok: ${response.ok} redirected: ${response.redirected}`);
+        const data: any = await response.json();
+        if (data.rows.length === pageSize) {
+            hasMore = true;
+        } else {
+            hasMore = false;
+        }
+
+        console.log(`[${new Date().toISOString()}] Fetched ${data.rows.length} rows. HasMore: ${hasMore}`);
+
+        // Process and save the data
+        const docs = data.rows.map((row: any) => row.doc);
+        if (docs.length > 0) {
+            docs.forEach((doc: any, index: any) => {
+                const jsonString = JSON.stringify(doc, null, 2);
+                appendFileSync(outputFile, jsonString + (hasMore || index < docs.length - 1 ? ',\n' : '\n'));
+            });
+            // Update the last document ID
+            lastDocId = docs[docs.length - 1]._id;
+        }
+
+        step = step + 1;
+        console.timeEnd(`Step ${step} time`);
+
+        // Check if there's more data to fetch
+        if (hasMore) {
+            lastDocId = data.rows[data.rows.length - 1].id;
+            console.log(`[${new Date().toISOString()}] Last key: ${lastDocId}`);
+
+            await fetchPage(lastDocId, outputFile);
+        }
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] An error occurred while fetching the data:`, error);
+        if (retryCount < maxRetries) {
+            console.log(`[${new Date().toISOString()}] Retrying (${retryCount + 1}/${maxRetries}) after ${retryDelay}ms...`);
+            await delay(retryDelay);
+            await fetchPage(startkey, outputFile, retryCount + 1);
+        } else {
+            console.error(`[${new Date().toISOString()}] Max retries reached. Skipping this page.`);
+        }
     }
 
-    step = step + 1;
-    console.timeEnd(`Step ${step} time`);
-
-    // Check if there's more data to fetch
-    if (hasMore) {
-        lastDocId = data.rows[data.rows.length - 1].id;
-        console.log(`[${new Date().toISOString()}] Last key: ${lastDocId}`);
-
-        await fetchPage(lastDocId, outputFile);
-    }
 }
 
 async function fetchAndSaveNpmDocs() {
