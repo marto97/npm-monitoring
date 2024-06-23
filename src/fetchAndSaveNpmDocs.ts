@@ -9,7 +9,7 @@ import { pipeline } from 'stream';
 
 // const url = 'https://replicate.npmjs.com/_all_docs';
 const url = 'https://replicate.npmjs.com/_all_docs?include_docs=true';
-const limit = 5;  // Number of documents per request
+const limit = 1000;  // Number of documents per request
 let step = 0;
 let retryCount = 0;
 
