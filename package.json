@@ -11,16 +11,16 @@
   "author": "Martin Yankov",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^20.14.2",
+    "@types/node": "^20.14.8",
     "@types/node-fetch": "^2.6.11",
-    "all-the-package-names": "^2.0.1553",
+    "all-the-package-names": "^2.0.1569",
     "axios": "^1.7.2",
     "get-package-downloads": "^3.1.0",
     "luxon": "^3.4.4",
     "node-fetch": "^3.3.2",
     "pacote": "^18.0.6",
     "semver": "^7.6.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2"
