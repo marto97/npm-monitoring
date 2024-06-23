@@ -19,7 +19,7 @@ async function fetchAndSaveNpmDocsOld() {
 
         console.log("All documents have been saved to npm_all_docs.json");
     } catch (error) {
-        console.error(`Failed to fetch data: ${error}`);
+        console.log(`Failed to fetch data: ${error}`);
     }
 }
 
@@ -61,7 +61,7 @@ async function fetchAndSaveNpmDocsOld2() {
 
             console.log(`Fetched and saved ${docs.length} documents. Step: ${step}`);
         } catch (error) {
-            console.error(`Failed to fetch data: ${error}`);
+            console.log(`Failed to fetch data: ${error}`);
             hasMore = false;
         }
     }
@@ -113,7 +113,7 @@ async function fetchAndSaveNpmDocsOld3() {
             console.timeEnd(`Step ${step} time`);
             console.log(`Fetched and saved ${docs.length} documents. Step: ${step}`);
         } catch (error) {
-            console.error(`Failed to fetch data: ${error}`);
+            console.log(`Failed to fetch data: ${error}`);
             hasMore = false;
         }
     }
@@ -125,8 +125,8 @@ async function fetchAndSaveNpmDocsOld3() {
 }
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
-const outputFile = 'npm_packages_metadata7.json';
-const pageSize = 1000;
+const outputFile = 'npm_packages_metadata_7.json';
+const pageSize = 3;
 const maxRetries = 3;
 const retryDelay = 5000; // Delay in milliseconds (5 seconds)
 
@@ -152,8 +152,6 @@ async function fetchPage(startkey: string | null, outputFile: string, retryCount
         const url = `${baseUrl}?${queryParams.toString()}`;
         console.log(`[${new Date().toISOString()}] Fetching: ${url}`);
 
-        // const url2 = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit=3&startkey=%22--fil--1%22&skip=1';
-        // console.log(`[${new Date().toISOString()}] Fetching: ${url2}`);
         const response = await fetch(url);
         console.log(`[${new Date().toISOString()}] Fetched response status ${response.status} statusText: ${response.statusText}, size: ${response.size} , ok: ${response.ok} redirected: ${response.redirected}`);
         const data: any = await response.json();
@@ -187,13 +185,14 @@ async function fetchPage(startkey: string | null, outputFile: string, retryCount
             await fetchPage(lastDocId, outputFile);
         }
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] An error occurred while fetching the data:`, error);
+        console.log(`[${new Date().toISOString()}] An error occurred while fetching the data:`, error);
         if (retryCount < maxRetries) {
+            console.log(`[${new Date().toISOString()}] Error details:`, error);
             console.log(`[${new Date().toISOString()}] Retrying (${retryCount + 1}/${maxRetries}) after ${retryDelay}ms...`);
             await delay(retryDelay);
             await fetchPage(startkey, outputFile, retryCount + 1);
         } else {
-            console.error(`[${new Date().toISOString()}] Max retries reached. Skipping this page.`);
+            console.log(`[${new Date().toISOString()}] Max retries reached. Skipping this page.`);
         }
     }
 
@@ -207,7 +206,7 @@ async function fetchAndSaveNpmDocs() {
     try {
         await fetchPage(null, outputFile);
     } catch (error) {
-        console.error('An error occurred while fetching the data:', error);
+        console.log('An error occurred while fetching the data:', error);
     } finally {
         // writeStream.write('{}]');  // End of the JSON array (empty object as a hack to fix the trailing comma)
         // writeStream.end();
