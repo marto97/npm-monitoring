@@ -126,7 +126,7 @@ async function fetchAndSaveNpmDocsOld3() {
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
 const outputFile = 'npm_packages_metadata_7.json';
-const pageSize = 3;
+const pageSize = 1000;
 const maxRetries = 3;
 const retryDelay = 5000; // Delay in milliseconds (5 seconds)
 
