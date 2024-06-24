@@ -5,6 +5,7 @@ import { appendFileSync, writeFileSync } from 'node:fs';
 const axios = require('axios');
 const fs = require('fs');
 const { exec } = require('child_process');
+import * as readline from 'readline';
 
 // TODO fix npm audit
 async function runNpmAuditForPackage(packageName: string, folderName: string): Promise<void> {
@@ -92,8 +93,8 @@ async function fetchAllPackageMetadataOld(packageNames: any, targetMetadataDirec
         console.log(`Completed batch ${i + 1}/${batches}`);
     }
 }
-
-async function fetchAllPackageMetadata(packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) {
+// Works but too slow might take a month
+async function fetchAllPackageMetadataOld2(packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) {
 
     const fileName = 'npm_all_docs9.json';
     writeFileSync(fileName, '[\n');  // Start the JSON array
@@ -118,6 +119,63 @@ async function fetchAllPackageMetadata(packageNames: any, targetMetadataDirector
     appendFileSync(fileName, '{}]\n');  // Add an empty object to handle the trailing comma
     console.log(`All documents have been saved to ${fileName}`);
 }
+
+const url = 'https://replicate.npmjs.com/_all_docs?include_docs=true';
+const urlLimit = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit100';
+
+// Function to fetch and save data
+const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
+    try {
+        // Log start of the fetching process
+        console.log('Starting to fetch data from npm registry...');
+
+        // Step 1: Fetch the Data with axios settings
+        const response = await axios.get(url, {
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+            responseType: 'stream'
+        });
+
+        if (response.status === 200) {
+            console.log('Data stream started...');
+
+            // Create a write stream to save the data
+            const writer = fs.createWriteStream('npm_packages_snapshot_10.json');
+            const totalLength = response.headers['content-length'];
+            let downloadedLength = 0;
+
+            response.data.on('data', (chunk: any) => {
+                downloadedLength += chunk.length;
+
+                // Log progress
+                if (totalLength) {
+                    const percentCompleted = Math.round((downloadedLength * 100) / totalLength);
+                    readline.cursorTo(process.stdout, 0);
+                    process.stdout.write(`Downloading: ${percentCompleted}% (${downloadedLength}/${totalLength} bytes)`);
+                } else {
+                    readline.cursorTo(process.stdout, 0);
+                    process.stdout.write(`Downloading: ${downloadedLength} bytes`);
+                }
+            });
+
+            response.data.pipe(writer);
+
+            writer.on('finish', () => {
+                console.log('\nData fetched and saved successfully.');
+            });
+
+            writer.on('error', (err: any) => {
+                console.error(`An error occurred while saving the data: ${err}`);
+            });
+        } else {
+            console.error(`Failed to fetch data. Status code: ${response.status}`);
+        }
+    } catch (error) {
+        console.error(`An error occurred: ${error}`);
+    }
+};
+
+
 
 export {
     fetchAllPackageMetadata
