@@ -6,6 +6,7 @@ const axios = require('axios');
 const fs = require('fs');
 const { exec } = require('child_process');
 import * as readline from 'readline';
+import fetch from 'npm-registry-fetch';
 
 // TODO fix npm audit
 async function runNpmAuditForPackage(packageName: string, folderName: string): Promise<void> {
@@ -121,10 +122,10 @@ async function fetchAllPackageMetadataOld2(packageNames: any, targetMetadataDire
 }
 
 const url = 'https://replicate.npmjs.com/_all_docs?include_docs=true';
-const urlLimit = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit100';
+const urlLimit = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit=10';
 
 // Function to fetch and save data
-const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
+const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
     try {
         // Log start of the fetching process
         console.log('Starting to fetch data from npm registry...');
@@ -170,6 +171,76 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         } else {
             console.error(`Failed to fetch data. Status code: ${response.status}`);
         }
+    } catch (error) {
+        console.error(`An error occurred: ${error}`);
+    }
+};
+
+const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
+    try {
+        // Log start of the fetching process
+        console.log('Starting to fetch data from npm registry...');
+
+        // Step 1: Fetch the Data with npm-registry-fetch settings
+        const response = await fetch(url, {
+            // Use 'json' responseType to automatically handle JSON parsing
+            responseType: 'json'
+        });
+
+        const data: NodeJS.ReadableStream | null = response.body;
+        if (data === null) {
+            throw new Error('Failed to fetch data: data stream is null.');
+        }
+
+        // Get content length
+        // const totalLength = response.headers['content-length'];
+        const totalLength = false;
+        let downloadedLength = 0;
+
+        // Create a write stream to save the data
+        const writer = fs.createWriteStream('npm_packages_snapshot_11.json');
+
+        // Write the opening bracket
+        // writer.write('[');
+
+        // Add a flag to check if the first chunk is written
+        // let firstChunk = true;
+
+        data.on('data', (chunk) => {
+            downloadedLength += chunk.length;
+
+            // Log progress
+            if (totalLength) {
+                const percentCompleted = Math.round((downloadedLength * 100) / totalLength);
+                readline.cursorTo(process.stdout, 0);
+                process.stdout.write(`Downloading: ${percentCompleted}% (${downloadedLength}/${totalLength} bytes)`);
+            } else {
+                readline.cursorTo(process.stdout, 0);
+                process.stdout.write(`Downloading: ${downloadedLength} bytes`);
+            }
+
+            // Write comma between chunks
+            // if (!firstChunk) {
+            //     writer.write(',');
+            // } else {
+            //     firstChunk = false;
+            // }
+
+            // Write chunk data
+            writer.write(chunk);
+        });
+
+        data.on('end', () => {
+            // Write the closing bracket
+            // writer.write(']');
+            writer.end();
+            console.log('\nData fetched and saved successfully.');
+        });
+
+        writer.on('error', (err: any) => {
+            console.error(`An error occurred while saving the data: ${err}`);
+        });
+
     } catch (error) {
         console.error(`An error occurred: ${error}`);
     }
