@@ -122,7 +122,7 @@ async function fetchAllPackageMetadataOld2(packageNames: any, targetMetadataDire
 }
 
 const url = 'https://replicate.npmjs.com/_all_docs?include_docs=true';
-const urlLimit = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit=10';
+const urlLimit = 'https://replicate.npmjs.com/_all_docs?include_docs=true&limit=100';
 
 // Function to fetch and save data
 const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
@@ -176,35 +176,74 @@ const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDire
     }
 };
 
+const baseUrl = 'https://replicate.npmjs.com/_all_docs';
+const outputFilePath = 'npm_packages_snapshot_11.json';
+const outputFilePathPart2 = 'npm_packages_snapshot_11-part2.json';
+
+
+// Function to read the last document ID from the output file
+const readLastDocumentId = (): string | null => {
+    if (fs.existsSync(outputFilePath)) {
+        const data = fs.readFileSync(outputFilePath, 'utf-8');
+        const lines = data.trim().split('\n');
+        if (lines.length > 0) {
+            const lastLine = lines[lines.length - 1];
+            try {
+                const lastDoc = JSON.parse(lastLine);
+                return lastDoc.id || null;
+            } catch (e) {
+                console.error('Failed to parse the last line of the output file:', e);
+                return null;
+            }
+        }
+    }
+    return null;
+};
+
 const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) => {
     try {
         // Log start of the fetching process
         console.log('Starting to fetch data from npm registry...');
 
+        const lastDocumentId = readLastDocumentId();
+        console.log(`lastDocumentId: ${lastDocumentId}`);
+
+        const queryParams = new URLSearchParams({
+            include_docs: 'true',
+            // limit: '3',
+        });
+        if (lastDocumentId) {
+            queryParams.set('startkey', JSON.stringify(lastDocumentId));
+            queryParams.set('skip', '1'); // Skip the first item to avoid duplication
+        }
+
+        const fetchUrl = `${baseUrl}?${queryParams.toString()}`;
+
+        console.log(`fetchUrl: ${fetchUrl}`);
+
         // Step 1: Fetch the Data with npm-registry-fetch settings
-        const response = await fetch(url, {
+        const response = await fetch(fetchUrl, {
             // Use 'json' responseType to automatically handle JSON parsing
             responseType: 'json'
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch data.');
+        }
 
         const data: NodeJS.ReadableStream | null = response.body;
         if (data === null) {
             throw new Error('Failed to fetch data: data stream is null.');
         }
 
-        // Get content length
+        // Get content length 
         // const totalLength = response.headers['content-length'];
         const totalLength = false;
         let downloadedLength = 0;
 
         // Create a write stream to save the data
-        const writer = fs.createWriteStream('npm_packages_snapshot_11.json');
-
-        // Write the opening bracket
-        // writer.write('[');
-
-        // Add a flag to check if the first chunk is written
-        // let firstChunk = true;
+        // const writer = fs.createWriteStream(outputFilePath);
+        const writer = fs.createWriteStream(outputFilePathPart2, { flags: 'a' });
 
         data.on('data', (chunk) => {
             downloadedLength += chunk.length;
@@ -218,21 +257,11 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
                 readline.cursorTo(process.stdout, 0);
                 process.stdout.write(`Downloading: ${downloadedLength} bytes`);
             }
-
-            // Write comma between chunks
-            // if (!firstChunk) {
-            //     writer.write(',');
-            // } else {
-            //     firstChunk = false;
-            // }
-
             // Write chunk data
             writer.write(chunk);
         });
 
         data.on('end', () => {
-            // Write the closing bracket
-            // writer.write(']');
             writer.end();
             console.log('\nData fetched and saved successfully.');
         });
