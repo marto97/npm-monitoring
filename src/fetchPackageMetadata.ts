@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { checkIfExistsAndUpdatePackageInfoFile } from './checkLocalPackageVersion';
 import { removePackage } from './removePackage';
+import { appendFileSync, writeFileSync } from 'node:fs';
 const axios = require('axios');
 const fs = require('fs');
 const { exec } = require('child_process');
@@ -39,7 +40,7 @@ async function fetchPackageMetadata(packageNamesBatch: string[], batchIndex: num
             try {
                 // TODO also check for removed packages     "description": "security holding package",
                 //"repository": "npm/security-holder",
-                
+
                 const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
                 const latestVersion = response.data['dist-tags'].latest;
                 const check = await checkIfExistsAndUpdatePackageInfoFile(packageName, latestVersion, localMetadataPackagesLatestVersion);
@@ -72,7 +73,7 @@ async function fetchPackageMetadata(packageNamesBatch: string[], batchIndex: num
     }
 }
 
-async function fetchAllPackageMetadata(packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) {
+async function fetchAllPackageMetadataOld(packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) {
     const currentDate = DateTime.local().toFormat('yyyyMMdd');
     const folderName = `${targetMetadataDirectory}/metadata_${currentDate}`;
     if (!fs.existsSync(folderName)) {
@@ -90,6 +91,32 @@ async function fetchAllPackageMetadata(packageNames: any, targetMetadataDirector
         await fetchPackageMetadata(packageNamesBatch, i + 1, folderName, localMetadataPackagesLatestVersion);
         console.log(`Completed batch ${i + 1}/${batches}`);
     }
+}
+
+async function fetchAllPackageMetadata(packageNames: any, targetMetadataDirectory: any, batchSize: any, localMetadataPackagesLatestVersion: string) {
+
+    const fileName = 'npm_all_docs9.json';
+    writeFileSync(fileName, '[\n');  // Start the JSON array
+    for (let index = 0; index < packageNames.length; index++) {
+
+        try {
+            let packageName = packageNames[index];
+            console.time(`Step ${index + 1} time packageName: ${packageName}`);
+
+            const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
+            console.log(`[${new Date().toISOString()}], status:  ${response.status}, ${response.statusText}`);
+            const jsonString = JSON.stringify(response.data, null, 2);
+
+            appendFileSync(fileName, jsonString + (index < packageNames.length - 1 ? ',\n' : '\n'));
+            console.timeEnd(`Step ${index + 1} time packageName: ${packageName}`);
+        } catch (error) {
+            console.log(`step ${index} packageName: ${packageNames[index]}`);
+            console.log(error);
+        }
+    }
+
+    appendFileSync(fileName, '{}]\n');  // Add an empty object to handle the trailing comma
+    console.log(`All documents have been saved to ${fileName}`);
 }
 
 export {

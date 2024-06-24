@@ -8,9 +8,9 @@ const packageNames = require("all-the-package-names");
 
 // Local testing for first 50 packages
 // const allPackageNames = packageNames.slice(0, 50);
-const fetchAllNpmDocs = true;
+const fetchAllNpmDocs = false;
 const enableDownloadSourceCode = false;
-const enableDownloadMetaData = false;
+const enableDownloadMetaData = true;
 const enableCheckDependences = false;
 const enableGetNPMPackagePopularity = false;
 const targetDownloadDirectory = './data/downloaded_packages';
