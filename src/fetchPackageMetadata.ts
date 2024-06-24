@@ -205,7 +205,8 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         // Log start of the fetching process
         console.log('Starting to fetch data from npm registry...');
 
-        const lastDocumentId = readLastDocumentId();
+        // const lastDocumentId = readLastDocumentId();
+        const lastDocumentId = "@composition/components";
         console.log(`lastDocumentId: ${lastDocumentId}`);
 
         const queryParams = new URLSearchParams({
