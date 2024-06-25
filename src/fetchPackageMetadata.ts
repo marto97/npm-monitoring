@@ -178,7 +178,7 @@ const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDire
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
 const outputFilePath = 'npm_packages_snapshot_11.json';
-const outputFilePathPart3 = 'npm_packages_snapshot_11-part3.json';
+const outputFilePathPart3 = 'npm_packages_snapshot_11-part4.json';
 
 
 // Function to read the last document ID from the output file
@@ -206,7 +206,7 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         console.log('Starting to fetch data from npm registry...');
 
         // const lastDocumentId = readLastDocumentId();
-        const lastDocumentId = "@grapecity-software/spread-sheets-designer-react";
+        const lastDocumentId = "@joepie91/gulp-partial-run-process";
         console.log(`lastDocumentId: ${lastDocumentId}`);
 
         const queryParams = new URLSearchParams({
