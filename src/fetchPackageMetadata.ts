@@ -178,7 +178,7 @@ const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDire
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
 const outputFilePath = 'npm_packages_snapshot_11.json';
-const outputFilePathPart2 = 'npm_packages_snapshot_11-part2.json';
+const outputFilePathPart3 = 'npm_packages_snapshot_11-part3.json';
 
 
 // Function to read the last document ID from the output file
@@ -206,7 +206,7 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         console.log('Starting to fetch data from npm registry...');
 
         // const lastDocumentId = readLastDocumentId();
-        const lastDocumentId = "@composition/components";
+        const lastDocumentId = "@grapecity-software/spread-sheets-designer-react";
         console.log(`lastDocumentId: ${lastDocumentId}`);
 
         const queryParams = new URLSearchParams({
@@ -244,7 +244,7 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
 
         // Create a write stream to save the data
         // const writer = fs.createWriteStream(outputFilePath);
-        const writer = fs.createWriteStream(outputFilePathPart2, { flags: 'a' });
+        const writer = fs.createWriteStream(outputFilePathPart3, { flags: 'a' });
 
         data.on('data', (chunk) => {
             downloadedLength += chunk.length;
