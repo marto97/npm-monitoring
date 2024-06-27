@@ -178,7 +178,8 @@ const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDire
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
 const outputFilePath = 'npm_packages_snapshot_11.json';
-const outputFilePathPart3 = 'npm_packages_snapshot_11-part10.json';
+const outputFilePathPart3 = 'npm_packages_snapshot_11-part11.json';
+const maxRetries = 5; // Maximum number of retries
 
 
 // Function to read the last document ID from the output file
@@ -206,7 +207,7 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         console.log('Starting to fetch data from npm registry...');
 
         // const lastDocumentId = readLastDocumentId();
-        const lastDocumentId = "hypercore-cache";
+        const lastDocumentId = "lpppp";
         console.log(`lastDocumentId: ${lastDocumentId}`);
 
         const queryParams = new URLSearchParams({
@@ -276,8 +277,109 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
     }
 };
 
+const fetchAllPackageMetadataNew = async () => {
+    try {
+        // Log start of the fetching process
+        console.log('Starting to fetch data from npm registry...');
+
+        // const lastDocumentId = readLastDocumentId();
+        const lastDocumentId = "hypercore-cache";
+        console.log(`lastDocumentId: ${lastDocumentId}`);
+
+        const queryParams = new URLSearchParams({
+            include_docs: 'true',
+            // limit: '3',
+        });
+        if (lastDocumentId) {
+            queryParams.set('startkey', JSON.stringify(lastDocumentId));
+            queryParams.set('skip', '1'); // Skip the first item to avoid duplication
+        }
+
+        const fetchUrl = `${baseUrl}?${queryParams.toString()}`;
+
+        console.log(`fetchUrl: ${fetchUrl}`);
+
+        let retryCount = 0;
+        let success = false;
+
+        while (retryCount < maxRetries && !success) {
+            try {
+                // Step 1: Fetch the Data with npm-registry-fetch settings
+                const response = await fetch(fetchUrl, {
+                    // Use 'json' responseType to automatically handle JSON parsing
+                    responseType: 'json',
+                    timeout: 5000
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data.');
+                }
+
+                const data: NodeJS.ReadableStream | null = response.body;
+                if (data === null) {
+                    throw new Error('Failed to fetch data: data stream is null.');
+                }
+
+                // Get content length 
+                // const totalLength = response.headers['content-length'];
+                const totalLength = false;
+                let downloadedLength = 0;
+
+                // Create a write stream to save the data
+                // const writer = fs.createWriteStream(outputFilePath);
+                const writer = fs.createWriteStream(outputFilePathPart3, { flags: 'a' });
+
+                data.on('data', (chunk) => {
+                    downloadedLength += chunk.length;
+
+                    // Log progress
+                    if (totalLength) {
+                        const percentCompleted = Math.round((downloadedLength * 100) / totalLength);
+                        readline.cursorTo(process.stdout, 0);
+                        process.stdout.write(`Downloading: ${percentCompleted}% (${downloadedLength}/${totalLength} bytes)`);
+                    } else {
+                        readline.cursorTo(process.stdout, 0);
+                        process.stdout.write(`Downloading: ${downloadedLength} bytes`);
+                    }
+                    // Write chunk data
+                    writer.write(chunk);
+                });
+
+                data.on('end', () => {
+                    writer.end();
+                    console.log('\nData fetched and saved successfully.');
+                    success = true; // Mark success to exit the retry loop
+                });
+
+                writer.on('error', (err: any) => {
+                    console.error(`An error occurred while saving the data: ${err}`);
+                });
+
+                data.on('error', (err: any) => {
+                    console.error(`An error occurred while receiving the data: ${err}`);
+                    writer.end(); // Ensure the writer stream is closed
+                    throw err; // Trigger the retry mechanism
+                });
+
+            } catch (error) {
+                retryCount++;
+                console.error(`An error occurred: ${error}. Retrying (${retryCount}/${maxRetries})...`);
+                await new Promise(res => setTimeout(res, 1000 * retryCount)); // Exponential backoff
+            }
+        }
+
+        if (!success) {
+            console.error('Failed to fetch data after maximum retries.');
+        }
+
+    } catch (error) {
+        console.error(`An unexpected error occurred: ${error}`);
+    }
+};
+
 
 
 export {
-    fetchAllPackageMetadata
+    fetchAllPackageMetadata,
+    fetchAllPackageMetadataNew
 }
