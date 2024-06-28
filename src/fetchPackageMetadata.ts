@@ -178,7 +178,7 @@ const fetchAllPackageMetadataOld3 = async (packageNames: any, targetMetadataDire
 
 const baseUrl = 'https://replicate.npmjs.com/_all_docs';
 const outputFilePath = 'npm_packages_snapshot_11.json';
-const outputFilePathPart3 = 'npm_packages_snapshot_11-part11.json';
+const outputFilePathPart3 = 'npm_packages_snapshot_11-part12.json';
 const maxRetries = 5; // Maximum number of retries
 
 
@@ -207,7 +207,7 @@ const fetchAllPackageMetadata = async (packageNames: any, targetMetadataDirector
         console.log('Starting to fetch data from npm registry...');
 
         // const lastDocumentId = readLastDocumentId();
-        const lastDocumentId = "lpppp";
+        const lastDocumentId = "luduteng-http-server";
         console.log(`lastDocumentId: ${lastDocumentId}`);
 
         const queryParams = new URLSearchParams({
