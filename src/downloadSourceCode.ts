@@ -2,7 +2,7 @@ const pacote = require('pacote');
 const path = require('path');
 const fs = require('fs');
 
-const CONCURRENCY_LIMIT = 50; // Adjust this value based on server's capacity
+const CONCURRENCY_LIMIT = 16; // Adjust this value based on server's capacity
 
 // Helper function to get the current timestamp
 function getTimestamp(): string {
