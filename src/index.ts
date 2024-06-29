@@ -1,5 +1,5 @@
 import { downloadAllPackagesSource } from './downloadSourceCode';
-import { fetchAllPackageMetadata } from './fetchPackageMetadata';
+import { fetchAllPackageMetadata, fetchAllPackageMetadataNew } from './fetchPackageMetadata';
 import { checkDependencies } from './checkDependencies';
 import { checkNpmPackage } from './findVulnerability';
 import { getNpmPackagePopularity } from './getPackagePopularity';
@@ -9,11 +9,11 @@ const packageNames = require("all-the-package-names");
 // Local testing for first 50 packages
 // const allPackageNames = packageNames.slice(0, 50);
 const fetchAllNpmDocs = false;
-const enableDownloadSourceCode = false;
-const enableDownloadMetaData = true;
+const enableDownloadSourceCode = true;
+const enableDownloadMetaData = false;
 const enableCheckDependences = false;
 const enableGetNPMPackagePopularity = false;
-const targetDownloadDirectory = './data/downloaded_packages';
+const targetDownloadDirectory = './data/downloaded_packages_source_code';
 const targetMetadataDirectory = './data/metadata';
 const localMetadataPackagesLatestVersion = './data/localPackagesLatestVersion.json'
 const batchSize = 1000; // Number of packages to process in each batch
@@ -77,11 +77,14 @@ const allPackageNames = packageNames;
 
 async function main() {
     try {
+        // const percentCompleted = Math.round((allPackageNames.indexOf('react-native-open-pdf') * 100) / allPackageNames.length);
+        // console.log(`Downloaded: ${percentCompleted}% - ${allPackageNames.indexOf('react-native-open-pdf')} from total: ${allPackageNames.length}`);
         if (fetchAllNpmDocs){
             await fetchAndSaveNpmDocs();
         }
         if (enableDownloadMetaData) {
             await fetchAllPackageMetadata(allPackageNames, targetMetadataDirectory, batchSize, localMetadataPackagesLatestVersion);
+            // await fetchAllPackageMetadataNew();
         }
         if (enableDownloadSourceCode) {
             await downloadAllPackagesSource(allPackageNames, targetDownloadDirectory);
