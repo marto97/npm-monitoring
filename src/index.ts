@@ -76,10 +76,15 @@ const allPackageNames = packageNames;
 
 
 async function main() {
+
+    // Handle unhandled rejections
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error(`[${new Date().toISOString()}] [ERROR] Unhandled Rejection at:`, promise, 'reason:', reason);
+    });
     try {
         // const percentCompleted = Math.round((allPackageNames.indexOf('react-native-open-pdf') * 100) / allPackageNames.length);
         // console.log(`Downloaded: ${percentCompleted}% - ${allPackageNames.indexOf('react-native-open-pdf')} from total: ${allPackageNames.length}`);
-        if (fetchAllNpmDocs){
+        if (fetchAllNpmDocs) {
             await fetchAndSaveNpmDocs();
         }
         if (enableDownloadMetaData) {
