@@ -37,7 +37,11 @@ async function downloadAllPackagesSource(packageNames: string[], targetDownloadD
 
     const enqueue = async (packageName: string) => {
         activeCount++;
-        await downloadPackageSource(packageName, targetDownloadDirectory);
+        try {
+            await downloadPackageSource(packageName, targetDownloadDirectory);
+        } catch (error) {
+            console.error(`[${getTimestamp()}] [ERROR] Error in enqueue for package "${packageName}":`, error);
+        }
         activeCount--;
 
         if (queue.length > 0) {
@@ -67,6 +71,12 @@ async function downloadAllPackagesSource(packageNames: string[], targetDownloadD
 
     console.log(`[${getTimestamp()}] [INFO] All packages have been downloaded.`);
 }
+
+// Handle unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(`[${getTimestamp()}] [ERROR] Unhandled Rejection at:`, promise, 'reason:', reason);
+});
+
 
 export {
     downloadAllPackagesSource
