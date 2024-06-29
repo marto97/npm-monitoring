@@ -132,4 +132,5 @@ dist
 #data
 data/metadata/
 data/downloaded_packages/
+data/downloaded_packages_source_code/
 .DS_Store
