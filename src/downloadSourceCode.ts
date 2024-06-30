@@ -11,18 +11,18 @@ function getTimestamp(): string {
 }
 
 async function downloadPackageSource(packageName: string, targetDirectory: string) {
-    console.log(`[${getTimestamp()}] [INFO] Starting download for package "${packageName}"`);
+    // console.log(`[${getTimestamp()}] [INFO] Starting download for package "${packageName}"`);
     try {
         const packageData = await pacote.manifest(packageName);
-        console.log(`[${getTimestamp()}] [INFO] Manifest fetched for package "${packageName}": version ${packageData.version}`);
+        // console.log(`[${getTimestamp()}] [INFO] Manifest fetched for package "${packageName}": version ${packageData.version}`);
         const packageVersion = packageData.version;
         const packagePath = path.join(`${targetDirectory}/${packageName}`, `${packageName}@${packageVersion}`);
         if (fs.existsSync(packagePath)) {
-            console.log(`[${getTimestamp()}] [INFO] Package "${packageName}", version: ${packageVersion} is already downloaded to ${packagePath}`);
+            // console.log(`[${getTimestamp()}] [INFO] Package "${packageName}", version: ${packageVersion} is already downloaded to ${packagePath}`);
         } else {
-            console.log(`[${getTimestamp()}] [INFO] Extracting package "${packageName}" to ${packagePath}`);
+            // console.log(`[${getTimestamp()}] [INFO] Extracting package "${packageName}" to ${packagePath}`);
             await pacote.extract(packageName, packagePath);
-            console.log(`[${getTimestamp()}] [INFO] Package "${packageName}" downloaded to ${packagePath}`);
+            // console.log(`[${getTimestamp()}] [INFO] Package "${packageName}" downloaded to ${packagePath}`);
         }
     } catch (error) {
         console.error(`[${getTimestamp()}] [ERROR] Error downloading package "${packageName}":`, error);
@@ -66,7 +66,7 @@ async function downloadAllPackagesSource(packageNames: string[], targetDownloadD
 
     // Wait for all active tasks and queued tasks to complete
     while (activeCount > 0 || queue.length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     console.log(`[${getTimestamp()}] [INFO] All packages have been downloaded.`);
