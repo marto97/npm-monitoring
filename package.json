@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node-fetch": "^2.6.11",
-    "all-the-package-names": "^2.0.1583",
+    "all-the-package-names": "^2.0.1584",
     "axios": "^1.7.2",
     "get-package-downloads": "^3.1.0",
     "luxon": "^3.4.4",
