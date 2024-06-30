@@ -2,7 +2,7 @@ const pacote = require('pacote');
 const path = require('path');
 const fs = require('fs');
 
-const CONCURRENCY_LIMIT = 1000; // Adjust this value based on server's capacity
+const CONCURRENCY_LIMIT = 16; // Adjust this value based on server's capacity
 
 // Helper function to get the current timestamp
 function getTimestamp(): string {
@@ -50,7 +50,7 @@ async function downloadAllPackagesSource(packageNames: string[], targetDownloadD
         }
     };
 
-    for (let index = 5000; index < packageNames.length; index++) {
+    for (let index = 75000; index < packageNames.length; index++) {
         if (activeCount >= CONCURRENCY_LIMIT) {
             await new Promise<void>((resolve) => {
                 queue.push(() => {
