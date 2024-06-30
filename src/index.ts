@@ -81,6 +81,13 @@ async function main() {
     process.on('unhandledRejection', (reason, promise) => {
         console.error(`[${new Date().toISOString()}] [ERROR] Unhandled Rejection at:`, promise, 'reason:', reason);
     });
+
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+        console.error(`[${new Date().toISOString()}] [ERROR] Uncaught Exception:`, error);
+        // process.exit(1); // Optional: exit the process if an uncaught exception occurs
+    });
+
     try {
         // const percentCompleted = Math.round((allPackageNames.indexOf('react-native-open-pdf') * 100) / allPackageNames.length);
         // console.log(`Downloaded: ${percentCompleted}% - ${allPackageNames.indexOf('react-native-open-pdf')} from total: ${allPackageNames.length}`);

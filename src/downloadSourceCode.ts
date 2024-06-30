@@ -2,7 +2,7 @@ const pacote = require('pacote');
 const path = require('path');
 const fs = require('fs');
 
-const CONCURRENCY_LIMIT = 8; // Adjust this value based on server's capacity
+const CONCURRENCY_LIMIT = 16; // Adjust this value based on server's capacity
 
 // Helper function to get the current timestamp
 function getTimestamp(): string {
@@ -18,11 +18,11 @@ async function downloadPackageSource(packageName: string, targetDirectory: strin
         const packageVersion = packageData.version;
         const packagePath = path.join(`${targetDirectory}/${packageName}`, `${packageName}@${packageVersion}`);
         if (fs.existsSync(packagePath)) {
-            // console.log(`[${getTimestamp()}] [INFO] Package "${packageName}", version: ${packageVersion} is already downloaded to ${packagePath}`);
+            console.log(`[${getTimestamp()}] [INFO] Package "${packageName}", version: ${packageVersion} is already downloaded to ${packagePath}`);
         } else {
             // console.log(`[${getTimestamp()}] [INFO] Extracting package "${packageName}" to ${packagePath}`);
             await pacote.extract(packageName, packagePath);
-            // console.log(`[${getTimestamp()}] [INFO] Package "${packageName}" downloaded to ${packagePath}`);
+            console.log(`[${getTimestamp()}] [INFO] Package "${packageName}" downloaded to ${packagePath}`);
         }
     } catch (error) {
         console.error(`[${getTimestamp()}] [ERROR] Error downloading package "${packageName}":`, error);
