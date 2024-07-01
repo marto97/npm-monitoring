@@ -50,7 +50,7 @@ async function downloadAllPackagesSource(packageNames: string[], targetDownloadD
         }
     };
 
-    for (let index = 136850; index < packageNames.length; index++) {
+    for (let index = 206400; index < packageNames.length; index++) {
         if (activeCount >= CONCURRENCY_LIMIT) {
             await new Promise<void>((resolve) => {
                 queue.push(() => {
